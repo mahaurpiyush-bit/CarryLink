@@ -1,0 +1,2 @@
+package com.carrylink.domain;
+public enum BookingStatus { PENDING, ACCEPTED, PAYMENT_PENDING, PAID, HANDED_OVER, IN_TRANSIT, DELIVERED, CANCELLED, DISPUTED }

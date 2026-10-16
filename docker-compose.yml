@@ -1,0 +1,31 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: carrylink
+      MYSQL_USER: carrylink
+      MYSQL_PASSWORD: carrylink
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - carrylink-mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "carrylink", "-pcarrylink"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+  api:
+    build: ./backend
+    environment:
+      DB_URL: jdbc:mysql://mysql:3306/carrylink?serverTimezone=UTC
+      DB_USER: carrylink
+      DB_PASSWORD: carrylink
+      JWT_SECRET: replace-this-with-a-real-32-byte-secret
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+volumes:
+  carrylink-mysql:
