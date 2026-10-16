@@ -1,85 +1,118 @@
-# CarryLink
+CarryLink — Journey-Based Delivery Platform
 
-CarryLink matches senders with verified travellers who have spare capacity on an existing journey. This repository is a serious internship-level modular monolith starter with:
+CarryLink is a full-stack web application that connects senders who need to deliver small permitted items with travellers who have spare carrying capacity on an existing journey.
 
-- Spring Boot REST API with JWT authentication, Bean Validation, role authorization, and transactional booking/capacity handling
-- MySQL schema managed by JPA/Hibernate
-- Constraint-based route-stop matching (route overlap, time window, capacity, and active status)
-- React + Vite client for registration, trip/request creation, matching, and booking state transitions
-- Docker Compose for local MySQL and the API
+Instead of creating a separate trip solely for delivery, the platform helps users discover compatible journeys, coordinate delivery requests, and manage bookings through a shared delivery workflow.
 
-## Run locally
+Key Features
 
-### Easiest Windows launch
+- Authentication and authorization: JWT-based authentication, role-based access, and request validation.
+- Trip management: Create trips with ordered route stops and manage their active status.
+- Delivery requests: Submit delivery requirements for permitted items.
+- Route-based matching: Identify compatible trips using route overlap, time windows, available capacity, and active status.
+- Booking workflow: Propose bookings, accept proposals, and manage booking status transitions.
+- Persistent data: H2 for local development by default, with MySQL support.
+- Containerized setup: Docker Compose configuration for local infrastructure.
 
-Double-click `start-carrylink.cmd` in the project folder. It opens separate backend and frontend windows and then opens the app at `http://localhost:5173`.
+Feature availability should be verified against the current implementation before publishing.
 
-Keep both command windows open while using CarryLink. To stop the app, press `Ctrl+C` in each window.
+Tech Stack
 
-### Save and reopen the project
+Layer| Technologies
+Frontend| React, Vite, JavaScript
+Backend| Java 17, Spring Boot
+Security| Spring Security, JWT
+Database| H2, MySQL
+Persistence| Spring Data JPA, Hibernate
+Validation| Jakarta Bean Validation
+Development| Maven, npm, Docker Compose
 
-Keep the complete `pro` folder together. The important folders are:
+Project Structure
 
-- `frontend` - React/Vite web interface
-- `backend` - Spring Boot API
-- `docs` - project documentation
+pro/
+├── backend/          # Spring Boot REST API
+├── frontend/         # React + Vite client
+├── docs/             # API documentation and roadmap
+├── docker-compose.yml
+├── start-carrylink.cmd
+└── README.md
 
-To open the source in VS Code, right-click the `pro` folder and choose **Open with Code**, or run:
+Getting Started
 
-```powershell
-code .
-```
+Prerequisites
 
-For a backup, copy the whole `pro` folder to another drive or upload it to a private GitHub repository. Do not delete `frontend/package-lock.json` or `backend/mvnw.cmd`; they make setup more reproducible.
+Install Java 17, Node.js with npm, and Maven. Docker is optional for the default H2 development setup.
 
-### Backend
+Option 1: Windows Quick Start
 
-```powershell
+Run "start-carrylink.cmd" from the project root. If the launcher is configured correctly, it starts the frontend and backend in separate terminal windows and opens the application in your browser.
+
+Keep the terminal windows open while using the application.
+
+Option 2: Run Manually
+
+1. Start the backend
+
+Open a terminal in the project root:
+
 cd backend
-$env:JAVA_HOME='C:\Program Files\Microsoft\jdk-17.0.20.101-hotspot'
-$env:Path="$env:JAVA_HOME\bin;C:\Tools\apache-maven-3.9.9\bin;$env:Path"
-mvn.cmd spring-boot:run
-```
+mvn spring-boot:run
 
-The API starts on `http://localhost:8080`. By default, the app starts with an embedded H2 database for local development, so you do not need Docker just to run the project. If you want MySQL instead, set `DB_URL`, `DB_USER`, and `DB_PASSWORD` or use Docker Compose.
+The API is expected at "http://localhost:8080".
 
-### Frontend
+If Maven is not installed globally, use the project's Maven Wrapper if it is present and configured.
 
-```powershell
+2. Start the frontend
+
+Open a second terminal in the project root:
+
 cd frontend
 npm install
 npm run dev
-```
 
-The UI starts on `http://localhost:5173`.
+Open "http://localhost:5173" in your browser.
 
-### MySQL with Docker
+Database Configuration
 
-```powershell
-docker compose up -d mysql
-```
+The default local configuration uses H2. To use MySQL, configure the database connection through the application's supported environment variables and ensure the database is running.
 
-The default local database is `carrylink`, user `carrylink`, password `carrylink`.
+The repository includes a Docker Compose configuration. Review "docker-compose.yml" and the Spring Boot database configuration before choosing the MySQL startup procedure.
 
-## Product scope
+Do not use development database credentials in a production deployment.
 
-The initial release deliberately focuses on the highest-value workflow:
+API Overview
 
-1. A user registers and logs in.
-2. A traveller creates a trip and ordered stops.
-3. A sender creates a permitted-item delivery request.
-4. The matching engine finds compatible route segments.
-5. Either side can approach the other with a booking proposal; the other person accepts it before capacity is reserved.
-6. The sender authorizes payment, marks the package collected, and the traveller marks it departed and reached. Both dashboards show the same delivery timeline.
+The API includes endpoints for authentication, trips, delivery requests, matching, and bookings.
 
-Payment, Maps, identity-document review, disputes, notifications, and admin moderation are modelled as next modules in `docs/ROADMAP.md`. A real payment provider should only be connected after the booking state machine and webhook reconciliation are in place.
+Examples from the current API design:
 
-## API highlights
+- "POST /api/auth/register" — register a user
+- "POST /api/auth/login" — authenticate a user
+- "POST /api/trips" — create a trip
+- "GET /api/trips/matches" — discover matching trips
+- "POST /api/requests" — create a delivery request
+- "GET /api/requests/matches" — discover compatible requests
+- "POST /api/bookings" — create a booking proposal
+- "PATCH /api/bookings/{id}/accept" — accept a booking proposal
+- "PATCH /api/bookings/{id}/status" — update booking status
 
-- `POST /api/auth/register`, `POST /api/auth/login`
-- `POST /api/trips`, `GET /api/trips/matches`
-- `POST /api/bookings`, `PATCH /api/bookings/{id}/accept`, `PATCH /api/bookings/{id}/status`
-- `POST /api/requests`, `GET /api/requests/matches`
-- `POST /api/bookings`, `PATCH /api/bookings/{id}/status`
+See "docs/API.md" for request examples and the implemented state-transition rules. Confirm the routes and methods against the source code before relying on this list.
 
-See `docs/API.md` for request examples and state rules.
+Scope and Future Work
+
+The initial focus is journey creation, delivery-request creation, route matching, and booking coordination.
+
+Payment-provider integration, map services, identity-document review, dispute resolution, notifications, and administrative moderation are planned extensions rather than claims of completed functionality unless implemented in the current version.
+
+Real payment integration should include secure payment processing, webhook verification, and reconciliation.
+
+Security Notes
+
+- Keep secrets and environment files out of version control.
+- Use strong, externally configured secrets for deployment.
+- Never rely on local development settings for production security.
+- Do not use real sensitive personal or payment information in testing.
+
+License
+
+No license has been specified yet. Add one if you intend to define how others may use, modify, and distribute this project.
